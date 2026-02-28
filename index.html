@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Exam Countdown</title>
+  <style>
+    :root {
+      --bg-top: #111827;
+      --bg-bottom: #020617;
+      --panel-top: #1f2937;
+      --panel-bottom: #0f172a;
+      --border: rgba(148, 163, 184, 0.14);
+      --text-main: #e5e7eb;
+      --text-muted: #94a3b8;
+      --accent: rgba(56, 189, 248, 0.24);
+      --success: #22c55e;
+      --warning: #f97316;
+      --danger: #ef4444;
+      --complete: #64748b;
+      --english: #c084fc;
+      --english-soft: #e9d5ff;
+      --history: #60a5fa;
+      --history-soft: #bfdbfe;
+      --politics: #fb7185;
+      --politics-soft: #fecdd3;
+      --break: #fbbf24;
+      --break-soft: #fef3c7;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      padding: 2rem 1rem;
+      display: flex;
+      justify-content: center;
+      background:
+        radial-gradient(circle at top right, rgba(14, 165, 233, 0.12), transparent 35%),
+        linear-gradient(180deg, var(--bg-top), var(--bg-bottom));
+      color: var(--text-main);
+      font-family: "Avenir Next", "Segoe UI", sans-serif;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 900px;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: clamp(2.2rem, 4vw, 3.4rem);
+      letter-spacing: -0.04em;
+      margin-bottom: 0.75rem;
+    }
+
+    .subtitle {
+      text-align: center;
+      margin: 0 auto 2rem;
+      max-width: 44rem;
+      color: var(--text-muted);
+      font-size: 0.98rem;
+      line-height: 1.6;
+    }
+
+    .grid {
+      display: grid;
+      gap: 1rem;
+    }
+
+    @media (min-width: 640px) {
+      .grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    .card {
+      --card-glow: rgba(56, 189, 248, 0.08);
+      --card-aura: rgba(56, 189, 248, 0.24);
+      --card-border: var(--border);
+      position: relative;
+      overflow: hidden;
+      border-radius: 1rem;
+      padding: 1.3rem 1.5rem;
+      border: 1px solid var(--card-border);
+      background:
+        radial-gradient(circle at top left, var(--card-glow), transparent 42%),
+        linear-gradient(160deg, var(--panel-top), var(--panel-bottom));
+      box-shadow: 0 22px 45px rgba(2, 6, 23, 0.28);
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: -45%;
+      background: radial-gradient(circle at top, var(--card-aura), transparent 60%);
+      opacity: 0.45;
+      pointer-events: none;
+    }
+
+    .card-header,
+    .card-body {
+      position: relative;
+      z-index: 1;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 1rem;
+      margin-bottom: 0.9rem;
+    }
+
+    .subject {
+      font-weight: 700;
+      font-size: 1.08rem;
+      letter-spacing: -0.02em;
+    }
+
+    .paper {
+      margin-top: 0.2rem;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .date {
+      flex-shrink: 0;
+      font-size: 0.84rem;
+      color: var(--text-muted);
+      text-align: right;
+    }
+
+    .days {
+      font-size: clamp(2rem, 3vw, 2.5rem);
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      margin-bottom: 0.2rem;
+    }
+
+    .label {
+      font-size: 0.84rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      margin-top: 0.85rem;
+      padding: 0.22rem 0.65rem;
+      border-radius: 999px;
+      font-size: 0.76rem;
+      border: 1px solid rgba(148, 163, 184, 0.32);
+      color: var(--text-main);
+      background: rgba(15, 23, 42, 0.82);
+    }
+
+    .pill-dot {
+      width: 0.48rem;
+      height: 0.48rem;
+      border-radius: 999px;
+      background: var(--success);
+    }
+
+    .pill.near .pill-dot {
+      background: var(--warning);
+    }
+
+    .pill.urgent .pill-dot {
+      background: var(--danger);
+    }
+
+    .pill.completed .pill-dot {
+      background: var(--complete);
+    }
+
+    .status {
+      margin-top: 0.45rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .card.family-english .subject,
+    .card.family-english .paper,
+    .card.family-english .days,
+    .card.family-english .pill {
+      color: var(--english-soft);
+    }
+
+    .card.family-english {
+      --card-glow: rgba(192, 132, 252, 0.16);
+      --card-aura: rgba(192, 132, 252, 0.28);
+      --card-border: rgba(192, 132, 252, 0.22);
+    }
+
+    .card.family-english .date,
+    .card.family-english .label,
+    .card.family-english .status {
+      color: var(--english);
+    }
+
+    .card.family-history .subject,
+    .card.family-history .paper,
+    .card.family-history .days,
+    .card.family-history .pill {
+      color: var(--history-soft);
+    }
+
+    .card.family-history {
+      --card-glow: rgba(96, 165, 250, 0.16);
+      --card-aura: rgba(96, 165, 250, 0.28);
+      --card-border: rgba(96, 165, 250, 0.22);
+    }
+
+    .card.family-history .date,
+    .card.family-history .label,
+    .card.family-history .status {
+      color: var(--history);
+    }
+
+    .card.family-politics .subject,
+    .card.family-politics .paper,
+    .card.family-politics .days,
+    .card.family-politics .pill {
+      color: var(--politics-soft);
+    }
+
+    .card.family-politics {
+      --card-glow: rgba(251, 113, 133, 0.16);
+      --card-aura: rgba(251, 113, 133, 0.28);
+      --card-border: rgba(251, 113, 133, 0.22);
+    }
+
+    .card.family-politics .date,
+    .card.family-politics .label,
+    .card.family-politics .status {
+      color: var(--politics);
+    }
+
+    .break-card {
+      --card-glow: rgba(251, 191, 36, 0.09);
+      --card-aura: rgba(251, 191, 36, 0.16);
+      --card-border: rgba(251, 191, 36, 0.14);
+      margin-top: 1rem;
+    }
+
+    .break-card .card-body {
+      display: grid;
+      gap: 0.85rem;
+    }
+
+    .break-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--break-soft);
+    }
+
+    .break-list {
+      display: grid;
+      gap: 0.75rem;
+    }
+
+    .break-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.8rem 0.95rem;
+      border-radius: 0.85rem;
+      border: 1px solid rgba(251, 191, 36, 0.12);
+      background: rgba(15, 23, 42, 0.36);
+    }
+
+    .break-dates {
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: #fde68a;
+    }
+
+    .break-name {
+      font-size: 0.9rem;
+      color: var(--break-soft);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .calendar-card {
+      --card-glow: rgba(148, 163, 184, 0.08);
+      --card-aura: rgba(148, 163, 184, 0.16);
+      --card-border: rgba(148, 163, 184, 0.14);
+      margin-top: 1rem;
+    }
+
+    .calendar-card .card-body {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .calendar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .calendar-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: #f8fafc;
+    }
+
+    .calendar-legend {
+      display: flex;
+      gap: 0.45rem;
+      flex-wrap: wrap;
+    }
+
+    .legend-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.22rem 0.65rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      background: rgba(15, 23, 42, 0.4);
+      color: var(--text-main);
+    }
+
+    .legend-swatch {
+      width: 0.55rem;
+      height: 0.55rem;
+      border-radius: 999px;
+      background: var(--text-muted);
+    }
+
+    .legend-pill.english .legend-swatch {
+      background: var(--english);
+    }
+
+    .legend-pill.history .legend-swatch {
+      background: var(--history);
+    }
+
+    .legend-pill.politics .legend-swatch {
+      background: var(--politics);
+    }
+
+    .legend-pill.break .legend-swatch {
+      background: var(--break);
+    }
+
+    .month-grid {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .month-panel {
+      padding: 0.95rem;
+      border-radius: 0.95rem;
+      border: 1px solid rgba(148, 163, 184, 0.1);
+      background: rgba(15, 23, 42, 0.4);
+    }
+
+    .month-name {
+      margin-bottom: 0.85rem;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #f8fafc;
+      letter-spacing: -0.02em;
+    }
+
+    .weekday-row,
+    .month-days {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 0.3rem;
+    }
+
+    .month-days {
+      margin-top: 0.45rem;
+    }
+
+    .weekday {
+      text-align: center;
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+    }
+
+    .day-cell {
+      min-height: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 0.7rem;
+      border: 1px solid transparent;
+      background: rgba(15, 23, 42, 0.22);
+      color: #cbd5e1;
+      font-size: 0.82rem;
+      font-weight: 600;
+      line-height: 1;
+      aspect-ratio: 1 / 1;
+    }
+
+    .day-cell.empty {
+      background: transparent;
+      border-color: transparent;
+    }
+
+    .day-cell.highlight-english {
+      color: var(--english-soft);
+      border-color: rgba(192, 132, 252, 0.34);
+      background: rgba(192, 132, 252, 0.18);
+    }
+
+    .day-cell.highlight-history {
+      color: var(--history-soft);
+      border-color: rgba(96, 165, 250, 0.34);
+      background: rgba(96, 165, 250, 0.18);
+    }
+
+    .day-cell.highlight-politics {
+      color: var(--politics-soft);
+      border-color: rgba(251, 113, 133, 0.34);
+      background: rgba(251, 113, 133, 0.18);
+    }
+
+    .day-cell.highlight-break {
+      color: var(--break-soft);
+      border-color: rgba(251, 191, 36, 0.34);
+      background: rgba(251, 191, 36, 0.2);
+    }
+
+    @media (min-width: 760px) {
+      .month-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 639px) {
+      .break-item {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 0.4rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <h1>Exam Countdown</h1>
+    <p class="subtitle">
+      Days remaining from today until each exam. The countdown updates automatically using your device date.
+    </p>
+    <section class="grid" id="examGrid" aria-live="polite"></section>
+    <section class="card break-card" aria-labelledby="breakTitle">
+      <div class="card-body">
+        <div>
+          <div class="label">School Breaks</div>
+          <h2 class="break-title" id="breakTitle">Upcoming Holidays</h2>
+        </div>
+        <div class="break-list">
+          <div class="break-item">
+            <span class="break-dates">28/3/26 - 13/4/26</span>
+            <span class="break-name">Easter</span>
+          </div>
+          <div class="break-item">
+            <span class="break-dates">23/5/26 - 31/5/26</span>
+            <span class="break-name">Half term</span>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="card calendar-card" aria-labelledby="calendarTitle">
+      <div class="card-body">
+        <div class="calendar-header">
+          <div>
+            <div class="label">Calendar View</div>
+            <h2 class="calendar-title" id="calendarTitle">April to June 2026</h2>
+          </div>
+          <div class="calendar-legend" aria-label="Calendar legend">
+            <span class="legend-pill english"><span class="legend-swatch"></span>English</span>
+            <span class="legend-pill history"><span class="legend-swatch"></span>History</span>
+            <span class="legend-pill politics"><span class="legend-swatch"></span>Politics</span>
+            <span class="legend-pill break"><span class="legend-swatch"></span>Breaks</span>
+          </div>
+        </div>
+        <div class="month-grid" id="calendarMonths" aria-live="polite"></div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const MS_PER_DAY = 24 * 60 * 60 * 1000;
+    const CALENDAR_MONTHS = [
+      { label: "April 2026", year: 2026, monthIndex: 3 },
+      { label: "May 2026", year: 2026, monthIndex: 4 },
+      { label: "June 2026", year: 2026, monthIndex: 5 }
+    ];
+    const WEEKDAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+    const exams = [
+      { subject: "English 1", paper: "Love", dateString: "13/05/2026" },
+      { subject: "History", paper: "USA", dateString: "19/05/2026" },
+      { subject: "Politics 1", paper: "Pol", dateString: "21/05/2026" },
+      { subject: "English 2", paper: "War", dateString: "01/06/2026" },
+      { subject: "History 2", paper: "India", dateString: "03/06/2026" },
+      { subject: "Politics 2", paper: "Gov", dateString: "08/06/2026" },
+      { subject: "History 3", paper: "War", dateString: "11/06/2026" },
+      { subject: "Politics 3", paper: "USA", dateString: "16/06/2026" }
+    ];
+
+    const schoolBreaks = [
+      { name: "Easter", startString: "28/03/2026", endString: "13/04/2026" },
+      { name: "Half term", startString: "23/05/2026", endString: "31/05/2026" }
+    ];
+
+    function parseUKDate(dateStr) {
+      const [day, month, year] = dateStr.split("/").map(Number);
+      return new Date(Date.UTC(year, month - 1, day));
+    }
+
+    function getTodayDateOnly() {
+      const now = new Date();
+      return new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+    }
+
+    function formatNice(date) {
+      return date.toLocaleDateString("en-GB", {
+        weekday: "short",
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+        timeZone: "UTC"
+      });
+    }
+
+    function daysBetween(start, end) {
+      return Math.round((end.getTime() - start.getTime()) / MS_PER_DAY);
+    }
+
+    function addDays(date, amount) {
+      return new Date(date.getTime() + amount * MS_PER_DAY);
+    }
+
+    function dateKey(date) {
+      return date.toISOString().slice(0, 10);
+    }
+
+    function badgeClass(days) {
+      if (days < 0) return "completed";
+      if (days <= 7) return "urgent";
+      if (days <= 21) return "near";
+      return "far";
+    }
+
+    function badgeText(days) {
+      if (days < 0) return "Completed";
+      if (days === 0) return "Today";
+      if (days <= 7) return "This week";
+      if (days <= 21) return "Coming up";
+      return "Plenty of time";
+    }
+
+    function countText(days) {
+      if (days < 0) return "exam date passed";
+      if (days === 0) return "happens today";
+      if (days === 1) return "day to go";
+      return "days to go";
+    }
+
+    function examFamily(subject) {
+      const normalized = subject.toLowerCase();
+
+      if (normalized.startsWith("english")) {
+        return "family-english";
+      }
+
+      if (normalized.startsWith("history")) {
+        return "family-history";
+      }
+
+      if (normalized.startsWith("politics")) {
+        return "family-politics";
+      }
+
+      return "";
+    }
+
+    function highlightClassFromFamily(family) {
+      if (!family) {
+        return "";
+      }
+
+      return family.replace("family-", "highlight-");
+    }
+
+    function buildCalendarHighlights() {
+      const highlights = new Map();
+
+      exams.forEach((exam) => {
+        const examDate = parseUKDate(exam.dateString);
+        const family = examFamily(exam.subject);
+
+        highlights.set(dateKey(examDate), {
+          className: highlightClassFromFamily(family),
+          label: `${exam.subject} (${exam.paper})`
+        });
+      });
+
+      schoolBreaks.forEach((holiday) => {
+        let current = parseUKDate(holiday.startString);
+        const end = parseUKDate(holiday.endString);
+
+        while (current.getTime() <= end.getTime()) {
+          const key = dateKey(current);
+
+          if (!highlights.has(key)) {
+            highlights.set(key, {
+              className: "highlight-break",
+              label: holiday.name
+            });
+          }
+
+          current = addDays(current, 1);
+        }
+      });
+
+      return highlights;
+    }
+
+    function renderExams() {
+      const grid = document.getElementById("examGrid");
+      const today = getTodayDateOnly();
+
+      grid.innerHTML = "";
+
+      exams
+        .map((exam) => ({ ...exam, date: parseUKDate(exam.dateString) }))
+        .sort((a, b) => a.date - b.date)
+        .forEach((exam) => {
+          const days = daysBetween(today, exam.date);
+          const badge = badgeText(days);
+          const badgeState = badgeClass(days);
+
+          const card = document.createElement("article");
+          card.className = `card ${examFamily(exam.subject)}`.trim();
+
+          card.innerHTML = `
+            <div class="card-header">
+              <div>
+                <div class="subject">${exam.subject}</div>
+                <div class="paper">${exam.paper}</div>
+              </div>
+              <div class="date">${formatNice(exam.date)}</div>
+            </div>
+            <div class="card-body">
+              <div class="days">${days > 0 ? days : 0}</div>
+              <div class="label">${countText(days)}</div>
+              <span class="pill ${badgeState}">
+                <span class="pill-dot"></span>
+                <span>${badge}</span>
+              </span>
+              ${days < 0 ? '<div class="status">This exam date has passed.</div>' : ""}
+            </div>
+          `;
+
+          grid.appendChild(card);
+        });
+    }
+
+    function renderCalendars() {
+      const container = document.getElementById("calendarMonths");
+      const highlights = buildCalendarHighlights();
+
+      container.innerHTML = "";
+
+      CALENDAR_MONTHS.forEach((month) => {
+        const firstDay = new Date(Date.UTC(month.year, month.monthIndex, 1));
+        const daysInMonth = new Date(Date.UTC(month.year, month.monthIndex + 1, 0)).getUTCDate();
+        const leadingBlanks = (firstDay.getUTCDay() + 6) % 7;
+        const weekdaysMarkup = WEEKDAY_LABELS
+          .map((weekday) => `<span class="weekday">${weekday}</span>`)
+          .join("");
+
+        let daysMarkup = "";
+
+        for (let blank = 0; blank < leadingBlanks; blank += 1) {
+          daysMarkup += '<span class="day-cell empty" aria-hidden="true"></span>';
+        }
+
+        for (let day = 1; day <= daysInMonth; day += 1) {
+          const dayDate = new Date(Date.UTC(month.year, month.monthIndex, day));
+          const highlight = highlights.get(dateKey(dayDate));
+          const className = highlight ? ` ${highlight.className}` : "";
+          const label = highlight
+            ? `${month.label} ${day}: ${highlight.label}`
+            : `${month.label} ${day}`;
+          const title = highlight ? ` title="${highlight.label}"` : "";
+
+          daysMarkup += `<span class="day-cell${className}" aria-label="${label}"${title}>${day}</span>`;
+        }
+
+        const panel = document.createElement("section");
+        panel.className = "month-panel";
+        panel.innerHTML = `
+          <h3 class="month-name">${month.label}</h3>
+          <div class="weekday-row">${weekdaysMarkup}</div>
+          <div class="month-days">${daysMarkup}</div>
+        `;
+
+        container.appendChild(panel);
+      });
+    }
+
+    renderExams();
+    renderCalendars();
+  </script>
+</body>
+</html>
