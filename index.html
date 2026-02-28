@@ -734,8 +734,21 @@
       });
     }
 
+    function scheduleMidnightRefresh() {
+      const nextMidnight = new Date();
+      nextMidnight.setHours(24, 0, 1, 0);
+
+      const delay = nextMidnight.getTime() - Date.now();
+
+      window.setTimeout(() => {
+        renderExams();
+        scheduleMidnightRefresh();
+      }, delay);
+    }
+
     renderExams();
     renderCalendars();
+    scheduleMidnightRefresh();
   </script>
 </body>
 </html>
