@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Exam calendar favicon">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#51c4ff" />
+      <stop offset="100%" stop-color="#1d4ed8" />
+    </linearGradient>
+    <linearGradient id="panel" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#eef8ff" />
+      <stop offset="100%" stop-color="#dbeafe" />
+    </linearGradient>
+    <linearGradient id="badge" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#fb923c" />
+      <stop offset="100%" stop-color="#ea580c" />
+    </linearGradient>
+  </defs>
+
+  <rect x="4" y="6" width="44" height="52" rx="8" fill="url(#bg)" stroke="#1e3a8a" stroke-width="2" />
+  <rect x="10" y="16" width="32" height="36" rx="5" fill="url(#panel)" stroke="#bfdbfe" stroke-width="1.5" />
+  <rect x="10" y="16" width="32" height="7" rx="5" fill="#3b82f6" />
+
+  <g fill="#e0f2fe" font-family="Avenir Next, Segoe UI, sans-serif" font-size="4.2" font-weight="700">
+    <text x="13.2" y="21">M</text>
+    <text x="20.2" y="21">T</text>
+    <text x="27.2" y="21">W</text>
+    <text x="34.2" y="21">T</text>
+  </g>
+
+  <g fill="none" stroke="#2563eb" stroke-width="1.2">
+    <path d="M17.5 23v29" />
+    <path d="M25 23v29" />
+    <path d="M32.5 23v29" />
+    <path d="M10 30.25h32" />
+    <path d="M10 37.5h32" />
+    <path d="M10 44.75h32" />
+  </g>
+
+  <g fill="#1d4ed8" font-family="Avenir Next, Segoe UI, sans-serif" font-size="4.5" font-weight="700">
+    <text x="12.5" y="28.8">5</text>
+    <text x="20.1" y="28.8">6</text>
+    <text x="27.2" y="28.8">8</text>
+    <text x="34.1" y="28.8">9</text>
+    <text x="12" y="36.2">12</text>
+    <text x="18.8" y="36.2">13</text>
+    <text x="27.3" y="36.2">18</text>
+    <text x="34.1" y="36.2">19</text>
+    <text x="12" y="50.5">25</text>
+    <text x="19.2" y="50.5">26</text>
+    <text x="27" y="50.5">27</text>
+  </g>
+
+  <rect x="26.5" y="31.5" width="7.5" height="7" rx="1.4" fill="url(#badge)" />
+  <rect x="34" y="31.5" width="8" height="7" rx="1.4" fill="url(#badge)" />
+  <rect x="34" y="45.7" width="8" height="6.3" rx="1.4" fill="url(#badge)" />
+
+  <path d="M29.1 34.5l1.6 1.4 2.8-3" fill="none" stroke="#fff7ed" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.4" />
+  <path d="M36.1 34.4l1.5 1.4 2.8-3" fill="none" stroke="#fff7ed" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.4" />
+  <path d="M36.1 48.2l1.5 1.3 2.8-2.9" fill="none" stroke="#fff7ed" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.4" />
+
+  <circle cx="49.5" cy="16" r="8.5" fill="#7dd3fc" stroke="#bae6fd" stroke-width="1.5" />
+  <path d="M49.5 11.7v4.8l3.2 2.9" fill="none" stroke="#e0f2fe" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" />
+</svg>
