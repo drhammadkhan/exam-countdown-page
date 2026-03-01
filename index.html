@@ -101,6 +101,22 @@
       box-shadow: 0 22px 45px rgba(2, 6, 23, 0.28);
     }
 
+    .card.is-complete {
+      cursor: pointer;
+      transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+    }
+
+    .card.is-complete:hover,
+    .card.is-complete:focus-visible {
+      transform: translateY(-2px);
+      box-shadow: 0 28px 55px rgba(2, 6, 23, 0.36);
+    }
+
+    .card.is-complete:focus-visible {
+      outline: 2px solid rgba(248, 250, 252, 0.35);
+      outline-offset: 3px;
+    }
+
     .card::before {
       content: "";
       position: absolute;
@@ -214,6 +230,77 @@
       letter-spacing: 0.08em;
       text-transform: uppercase;
       color: var(--text-muted);
+    }
+
+    .celebration-layer {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 30;
+    }
+
+    .confetti-piece {
+      position: fixed;
+      left: 0;
+      top: 0;
+      border-radius: 0.3rem;
+      opacity: 0;
+      transform: translate3d(0, 0, 0) rotate(0deg);
+      animation: confetti-burst var(--duration, 1400ms) cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+      animation-delay: var(--delay, 0ms);
+      will-change: transform, opacity;
+    }
+
+    .grand-message {
+      position: fixed;
+      left: 50%;
+      top: 18%;
+      transform: translateX(-50%) scale(0.92);
+      padding: 0.85rem 1.25rem;
+      border-radius: 999px;
+      border: 1px solid rgba(248, 250, 252, 0.2);
+      background:
+        linear-gradient(135deg, rgba(15, 23, 42, 0.92), rgba(30, 41, 59, 0.88));
+      box-shadow: 0 22px 45px rgba(2, 6, 23, 0.34);
+      color: #f8fafc;
+      font-size: clamp(1rem, 2.4vw, 1.45rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      opacity: 0;
+      animation: grand-message-pop 2200ms ease forwards;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    @keyframes confetti-burst {
+      0% {
+        opacity: 1;
+        transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+      }
+
+      100% {
+        opacity: 0;
+        transform: translate3d(var(--dx, 0), var(--dy, 0), 0) rotate(var(--spin, 0deg)) scale(0.7);
+      }
+    }
+
+    @keyframes grand-message-pop {
+      0% {
+        opacity: 0;
+        transform: translateX(-50%) scale(0.92);
+      }
+
+      14%,
+      78% {
+        opacity: 1;
+        transform: translateX(-50%) scale(1);
+      }
+
+      100% {
+        opacity: 0;
+        transform: translateX(-50%) scale(1.04);
+      }
     }
 
     .card.family-english .subject,
@@ -546,6 +633,7 @@
       </div>
     </section>
   </main>
+  <div class="celebration-layer" id="celebrationLayer" aria-hidden="true"></div>
 
   <script>
     const MS_PER_DAY = 24 * 60 * 60 * 1000;
@@ -555,6 +643,12 @@
       { label: "June 2026", year: 2026, monthIndex: 5 }
     ];
     const WEEKDAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+    const CELEBRATION_COLOURS = {
+      "family-english": ["#c084fc", "#e9d5ff", "#f5d0fe"],
+      "family-history": ["#60a5fa", "#bfdbfe", "#dbeafe"],
+      "family-politics": ["#fb7185", "#fecdd3", "#ffe4e6"],
+      grand: ["#c084fc", "#60a5fa", "#fb7185", "#fbbf24", "#e9d5ff", "#bfdbfe", "#fecdd3"]
+    };
 
     const exams = [
       { subject: "English 1", paper: "Love", dateString: "13/05/2026", quoteText: "Love doesn't discriminate between the sinners and the saints.", quoteFrom: "Wait For It" },
@@ -571,6 +665,7 @@
       { name: "Easter", startString: "28/03/2026", endString: "13/04/2026" },
       { name: "Half term", startString: "23/05/2026", endString: "31/05/2026" }
     ];
+    let hasShownGrandCelebration = false;
 
     function parseUKDate(dateStr) {
       const [day, month, year] = dateStr.split("/").map(Number);
@@ -652,6 +747,109 @@
       return family.replace("family-", "highlight-");
     }
 
+    function celebrationPalette(family) {
+      return CELEBRATION_COLOURS[family] || CELEBRATION_COLOURS.grand;
+    }
+
+    function createConfettiBurst(options) {
+      const layer = document.getElementById("celebrationLayer");
+      const {
+        colours,
+        count,
+        duration,
+        gravity,
+        spread,
+        x,
+        y
+      } = options;
+
+      for (let index = 0; index < count; index += 1) {
+        const piece = document.createElement("span");
+        const angle = Math.random() * Math.PI * 2;
+        const distance = spread * (0.45 + Math.random() * 0.75);
+        const driftX = Math.cos(angle) * distance;
+        const driftY = Math.sin(angle) * distance + gravity;
+        const size = 7 + Math.random() * 8;
+
+        piece.className = "confetti-piece";
+        piece.style.left = `${(x - size / 2).toFixed(1)}px`;
+        piece.style.top = `${(y - size / 2).toFixed(1)}px`;
+        piece.style.width = `${size}px`;
+        piece.style.height = `${Math.max(5, size * 0.55)}px`;
+        piece.style.background = colours[index % colours.length];
+        piece.style.setProperty("--dx", `${driftX.toFixed(1)}px`);
+        piece.style.setProperty("--dy", `${driftY.toFixed(1)}px`);
+        piece.style.setProperty("--spin", `${Math.round((Math.random() - 0.5) * 900)}deg`);
+        piece.style.setProperty("--duration", `${Math.round(duration + Math.random() * 420)}ms`);
+        piece.style.setProperty("--delay", `${Math.round(Math.random() * 90)}ms`);
+
+        piece.addEventListener("animationend", () => {
+          piece.remove();
+        }, { once: true });
+
+        layer.appendChild(piece);
+      }
+    }
+
+    function launchCardCelebration(card, family) {
+      const rect = card.getBoundingClientRect();
+
+      createConfettiBurst({
+        x: rect.left + rect.width / 2,
+        y: rect.top + Math.min(110, rect.height * 0.35),
+        colours: celebrationPalette(family),
+        count: 24,
+        duration: 1300,
+        gravity: 180,
+        spread: Math.max(110, rect.width * 0.45)
+      });
+    }
+
+    function showGrandMessage() {
+      const layer = document.getElementById("celebrationLayer");
+      const message = document.createElement("div");
+
+      message.className = "grand-message";
+      message.textContent = "All exams complete!";
+      message.addEventListener("animationend", () => {
+        message.remove();
+      }, { once: true });
+
+      layer.appendChild(message);
+    }
+
+    function launchGrandCelebration() {
+      if (hasShownGrandCelebration) {
+        return;
+      }
+
+      hasShownGrandCelebration = true;
+
+      const burstPoints = [
+        [0.18, 0.26],
+        [0.36, 0.22],
+        [0.5, 0.18],
+        [0.64, 0.22],
+        [0.82, 0.26]
+      ];
+
+      burstPoints.forEach(([xFactor, yFactor], index) => {
+        window.setTimeout(() => {
+          createConfettiBurst({
+            x: window.innerWidth * xFactor,
+            y: window.innerHeight * yFactor,
+            colours: CELEBRATION_COLOURS.grand,
+            count: 34,
+            duration: 1700,
+            gravity: 260,
+            spread: 210
+          });
+        }, index * 120);
+      });
+
+      showGrandMessage();
+    }
+
     function buildCalendarHighlights() {
       const highlights = new Map();
 
@@ -689,19 +887,25 @@
     function renderExams() {
       const grid = document.getElementById("examGrid");
       const today = getTodayDateOnly();
+      const timedExams = exams
+        .map((exam) => ({ ...exam, date: parseUKDate(exam.dateString) }))
+        .sort((a, b) => a.date - b.date);
+      const allPassed = timedExams.every((exam) => daysBetween(today, exam.date) < 0);
 
       grid.innerHTML = "";
 
-      exams
-        .map((exam) => ({ ...exam, date: parseUKDate(exam.dateString) }))
-        .sort((a, b) => a.date - b.date)
-        .forEach((exam) => {
+      if (!allPassed) {
+        hasShownGrandCelebration = false;
+      }
+
+      timedExams.forEach((exam) => {
           const days = daysBetween(today, exam.date);
           const badge = badgeText(days);
           const badgeState = badgeClass(days);
+          const family = examFamily(exam.subject);
 
           const card = document.createElement("article");
-          card.className = `card ${examFamily(exam.subject)}`.trim();
+          card.className = `card ${family}`.trim();
 
           card.innerHTML = `
             <div class="card-header">
@@ -722,12 +926,32 @@
                 <div class="quote">"${exam.quoteText}"</div>
                 <div class="quote-source">From ${exam.quoteFrom}</div>
               </div>
-              ${days < 0 ? '<div class="status">This exam date has passed.</div>' : ""}
+              ${days < 0 ? '<div class="status">This exam date has passed. Press to celebrate.</div>' : ""}
             </div>
           `;
 
+          if (days < 0) {
+            card.classList.add("is-complete");
+            card.tabIndex = 0;
+            card.setAttribute("role", "button");
+            card.setAttribute("aria-label", `Celebrate ${exam.subject}`);
+            card.addEventListener("click", () => {
+              launchCardCelebration(card, family);
+            });
+            card.addEventListener("keydown", (event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                launchCardCelebration(card, family);
+              }
+            });
+          }
+
           grid.appendChild(card);
         });
+
+      if (allPassed) {
+        launchGrandCelebration();
+      }
     }
 
     function renderCalendars() {
