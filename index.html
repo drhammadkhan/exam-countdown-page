@@ -253,6 +253,31 @@
       will-change: transform, opacity;
     }
 
+    .spark-ring {
+      position: fixed;
+      width: 18px;
+      height: 18px;
+      border-radius: 999px;
+      border: 2px solid rgba(255, 255, 255, 0.95);
+      opacity: 0;
+      animation: spark-ring-bloom 680ms ease-out forwards;
+      pointer-events: none;
+      will-change: transform, opacity;
+    }
+
+    .streamer {
+      position: fixed;
+      width: 4px;
+      height: 38px;
+      border-radius: 999px;
+      opacity: 0;
+      transform-origin: top center;
+      animation: streamer-swoop var(--duration, 920ms) ease-out forwards;
+      animation-delay: var(--delay, 0ms);
+      pointer-events: none;
+      will-change: transform, opacity;
+    }
+
     .grand-message {
       position: fixed;
       left: 50%;
@@ -301,6 +326,30 @@
       100% {
         opacity: 0;
         transform: translateX(-50%) scale(1.04);
+      }
+    }
+
+    @keyframes spark-ring-bloom {
+      0% {
+        opacity: 0.95;
+        transform: translate3d(-50%, -50%, 0) scale(0.3);
+      }
+
+      100% {
+        opacity: 0;
+        transform: translate3d(-50%, -50%, 0) scale(7.5);
+      }
+    }
+
+    @keyframes streamer-swoop {
+      0% {
+        opacity: 1;
+        transform: translate3d(0, 0, 0) rotate(var(--tilt, 0deg));
+      }
+
+      100% {
+        opacity: 0;
+        transform: translate3d(var(--dx, 0), var(--dy, 0), 0) rotate(calc(var(--tilt, 0deg) + var(--spin, 0deg)));
       }
     }
 
@@ -794,16 +843,67 @@
 
     function launchCardCelebration(card, family) {
       const rect = card.getBoundingClientRect();
+      const x = rect.left + rect.width / 2;
+      const y = rect.top + Math.min(110, rect.height * 0.35);
+      const colours = celebrationPalette(family);
 
       createConfettiBurst({
-        x: rect.left + rect.width / 2,
-        y: rect.top + Math.min(110, rect.height * 0.35),
-        colours: celebrationPalette(family),
-        count: 24,
-        duration: 1300,
-        gravity: 180,
-        spread: Math.max(110, rect.width * 0.45)
+        x,
+        y,
+        colours,
+        count: 42,
+        duration: 1500,
+        gravity: 220,
+        spread: Math.max(150, rect.width * 0.58)
       });
+
+      launchSparkRing(x, y, colours[0]);
+      launchStreamers(x, y, colours);
+    }
+
+    function launchSparkRing(x, y, colour) {
+      const layer = document.getElementById("celebrationLayer");
+      const ring = document.createElement("span");
+
+      ring.className = "spark-ring";
+      ring.style.left = `${x}px`;
+      ring.style.top = `${y}px`;
+      ring.style.borderColor = colour;
+      ring.addEventListener("animationend", () => {
+        ring.remove();
+      }, { once: true });
+
+      layer.appendChild(ring);
+    }
+
+    function launchStreamers(x, y, colours) {
+      const layer = document.getElementById("celebrationLayer");
+
+      for (let index = 0; index < 14; index += 1) {
+        const streamer = document.createElement("span");
+        const tilt = -65 + Math.random() * 130;
+        const distance = 80 + Math.random() * 145;
+        const rad = (tilt * Math.PI) / 180;
+        const dx = Math.cos(rad) * distance;
+        const dy = 120 + Math.abs(Math.sin(rad)) * 95;
+
+        streamer.className = "streamer";
+        streamer.style.left = `${(x - 2).toFixed(1)}px`;
+        streamer.style.top = `${(y - 8).toFixed(1)}px`;
+        streamer.style.background = colours[index % colours.length];
+        streamer.style.setProperty("--tilt", `${tilt.toFixed(1)}deg`);
+        streamer.style.setProperty("--dx", `${dx.toFixed(1)}px`);
+        streamer.style.setProperty("--dy", `${dy.toFixed(1)}px`);
+        streamer.style.setProperty("--spin", `${Math.round((Math.random() - 0.5) * 180)}deg`);
+        streamer.style.setProperty("--duration", `${Math.round(780 + Math.random() * 520)}ms`);
+        streamer.style.setProperty("--delay", `${Math.round(Math.random() * 100)}ms`);
+
+        streamer.addEventListener("animationend", () => {
+          streamer.remove();
+        }, { once: true });
+
+        layer.appendChild(streamer);
+      }
     }
 
     function showGrandMessage() {
