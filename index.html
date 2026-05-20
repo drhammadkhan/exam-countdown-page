@@ -76,6 +76,33 @@
       line-height: 1.6;
     }
 
+    .preview-wrap {
+      display: flex;
+      justify-content: center;
+      margin: -0.5rem 0 1.5rem;
+    }
+
+    .preview-btn {
+      border: 1px solid rgba(148, 163, 184, 0.28);
+      background: rgba(15, 23, 42, 0.52);
+      color: #f8fafc;
+      border-radius: 999px;
+      padding: 0.45rem 0.95rem;
+      font-size: 0.78rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: transform 140ms ease, box-shadow 140ms ease, border-color 140ms ease;
+    }
+
+    .preview-btn:hover,
+    .preview-btn:focus-visible {
+      transform: translateY(-1px);
+      border-color: rgba(148, 163, 184, 0.5);
+      box-shadow: 0 10px 20px rgba(2, 6, 23, 0.26);
+      outline: none;
+    }
+
     .grid {
       display: grid;
       gap: 1rem;
@@ -265,6 +292,18 @@
       will-change: transform, opacity;
     }
 
+    .star-burst {
+      position: fixed;
+      width: 18px;
+      height: 18px;
+      opacity: 0;
+      clip-path: polygon(50% 0%, 61% 36%, 98% 36%, 68% 57%, 79% 92%, 50% 70%, 21% 92%, 32% 57%, 2% 36%, 39% 36%);
+      animation: star-burst-flight var(--duration, 920ms) ease-out forwards;
+      animation-delay: var(--delay, 0ms);
+      pointer-events: none;
+      will-change: transform, opacity;
+    }
+
     .streamer {
       position: fixed;
       width: 4px;
@@ -297,6 +336,20 @@
       animation: grand-message-pop 2200ms ease forwards;
       text-align: center;
       white-space: nowrap;
+    }
+
+    .grand-aura {
+      position: fixed;
+      inset: -12%;
+      pointer-events: none;
+      opacity: 0;
+      background:
+        radial-gradient(circle at 22% 26%, rgba(192, 132, 252, 0.28), transparent 28%),
+        radial-gradient(circle at 78% 30%, rgba(96, 165, 250, 0.24), transparent 30%),
+        radial-gradient(circle at 52% 76%, rgba(251, 113, 133, 0.22), transparent 33%),
+        radial-gradient(circle at 45% 18%, rgba(251, 191, 36, 0.2), transparent 22%);
+      animation: grand-aura-wave 10800ms ease-in-out forwards;
+      z-index: 15;
     }
 
     @keyframes confetti-burst {
@@ -341,6 +394,18 @@
       }
     }
 
+    @keyframes star-burst-flight {
+      0% {
+        opacity: 1;
+        transform: translate3d(-50%, -50%, 0) scale(0.6) rotate(0deg);
+      }
+
+      100% {
+        opacity: 0;
+        transform: translate3d(calc(-50% + var(--dx, 0)), calc(-50% + var(--dy, 0)), 0) scale(1.35) rotate(var(--spin, 0deg));
+      }
+    }
+
     @keyframes streamer-swoop {
       0% {
         opacity: 1;
@@ -350,6 +415,24 @@
       100% {
         opacity: 0;
         transform: translate3d(var(--dx, 0), var(--dy, 0), 0) rotate(calc(var(--tilt, 0deg) + var(--spin, 0deg)));
+      }
+    }
+
+    @keyframes grand-aura-wave {
+      0% {
+        opacity: 0;
+        transform: scale(0.95);
+      }
+
+      10%,
+      78% {
+        opacity: 1;
+        transform: scale(1.02);
+      }
+
+      100% {
+        opacity: 0;
+        transform: scale(1.07);
       }
     }
 
@@ -646,6 +729,9 @@
     <p class="subtitle">
       Days remaining from today until each exam. The countdown updates automatically using your device date.
     </p>
+    <div class="preview-wrap">
+      <button class="preview-btn" id="previewGrandBtn" type="button">Preview final celebration</button>
+    </div>
     <section class="grid" id="examGrid" aria-live="polite"></section>
     <section class="card break-card" aria-labelledby="breakTitle">
       <div class="card-body">
@@ -809,16 +895,21 @@
         duration,
         gravity,
         spread,
+        upward,
         x,
         y
       } = options;
 
       for (let index = 0; index < count; index += 1) {
         const piece = document.createElement("span");
-        const angle = Math.random() * Math.PI * 2;
-        const distance = spread * (0.45 + Math.random() * 0.75);
+        const distance = spread * (0.45 + Math.random() * 0.9);
+        const angle = upward
+          ? (-Math.PI / 2) + ((Math.random() - 0.5) * 1.15)
+          : Math.random() * Math.PI * 2;
         const driftX = Math.cos(angle) * distance;
-        const driftY = Math.sin(angle) * distance + gravity;
+        const driftY = upward
+          ? (-Math.abs(Math.sin(angle)) * distance) + gravity
+          : (Math.sin(angle) * distance) + gravity;
         const size = 7 + Math.random() * 8;
 
         piece.className = "confetti-piece";
@@ -851,14 +942,29 @@
         x,
         y,
         colours,
-        count: 42,
-        duration: 1500,
-        gravity: 220,
-        spread: Math.max(150, rect.width * 0.58)
+        upward: true,
+        count: 68,
+        duration: 1850,
+        gravity: -70,
+        spread: Math.max(190, rect.width * 0.72)
       });
 
+      window.setTimeout(() => {
+        createConfettiBurst({
+          x,
+          y,
+          upward: true,
+          colours,
+          count: 52,
+          duration: 1700,
+          gravity: -40,
+          spread: Math.max(170, rect.width * 0.66)
+        });
+      }, 120);
+
       launchSparkRing(x, y, colours[0]);
-      launchStreamers(x, y, colours);
+      launchSparkRing(x, y, colours[1] || colours[0]);
+      launchStarBurst(x, y, colours);
     }
 
     function launchSparkRing(x, y, colour) {
@@ -876,33 +982,35 @@
       layer.appendChild(ring);
     }
 
-    function launchStreamers(x, y, colours) {
+    function launchStarBurst(x, y, colours) {
       const layer = document.getElementById("celebrationLayer");
 
-      for (let index = 0; index < 14; index += 1) {
-        const streamer = document.createElement("span");
-        const tilt = -65 + Math.random() * 130;
-        const distance = 80 + Math.random() * 145;
-        const rad = (tilt * Math.PI) / 180;
-        const dx = Math.cos(rad) * distance;
-        const dy = 120 + Math.abs(Math.sin(rad)) * 95;
+      for (let index = 0; index < 18; index += 1) {
+        const star = document.createElement("span");
+        const angle = (-Math.PI / 2) + ((Math.random() - 0.5) * 1.7);
+        const distance = 90 + Math.random() * 200;
+        const dx = Math.cos(angle) * distance;
+        const dy = (-Math.abs(Math.sin(angle)) * distance) + (80 + Math.random() * 160);
+        const size = 10 + Math.random() * 16;
 
-        streamer.className = "streamer";
-        streamer.style.left = `${(x - 2).toFixed(1)}px`;
-        streamer.style.top = `${(y - 8).toFixed(1)}px`;
-        streamer.style.background = colours[index % colours.length];
-        streamer.style.setProperty("--tilt", `${tilt.toFixed(1)}deg`);
-        streamer.style.setProperty("--dx", `${dx.toFixed(1)}px`);
-        streamer.style.setProperty("--dy", `${dy.toFixed(1)}px`);
-        streamer.style.setProperty("--spin", `${Math.round((Math.random() - 0.5) * 180)}deg`);
-        streamer.style.setProperty("--duration", `${Math.round(780 + Math.random() * 520)}ms`);
-        streamer.style.setProperty("--delay", `${Math.round(Math.random() * 100)}ms`);
+        star.className = "star-burst";
+        star.style.left = `${x.toFixed(1)}px`;
+        star.style.top = `${y.toFixed(1)}px`;
+        star.style.width = `${size}px`;
+        star.style.height = `${size}px`;
+        star.style.background = colours[index % colours.length];
+        star.style.filter = "drop-shadow(0 0 6px rgba(255,255,255,0.45))";
+        star.style.setProperty("--dx", `${dx.toFixed(1)}px`);
+        star.style.setProperty("--dy", `${dy.toFixed(1)}px`);
+        star.style.setProperty("--spin", `${Math.round((Math.random() - 0.5) * 320)}deg`);
+        star.style.setProperty("--duration", `${Math.round(820 + Math.random() * 640)}ms`);
+        star.style.setProperty("--delay", `${Math.round(Math.random() * 120)}ms`);
 
-        streamer.addEventListener("animationend", () => {
-          streamer.remove();
+        star.addEventListener("animationend", () => {
+          star.remove();
         }, { once: true });
 
-        layer.appendChild(streamer);
+        layer.appendChild(star);
       }
     }
 
@@ -919,36 +1027,139 @@
       layer.appendChild(message);
     }
 
+    function launchStreamers360(x, y, colours) {
+      const layer = document.getElementById("celebrationLayer");
+
+      for (let index = 0; index < 18; index += 1) {
+        const streamer = document.createElement("span");
+        const angle = Math.random() * Math.PI * 2;
+        const distance = 130 + Math.random() * 260;
+        const dx = Math.cos(angle) * distance;
+        const dy = Math.sin(angle) * distance;
+
+        streamer.className = "streamer";
+        streamer.style.left = `${(x - 2).toFixed(1)}px`;
+        streamer.style.top = `${(y - 8).toFixed(1)}px`;
+        streamer.style.background = colours[index % colours.length];
+        streamer.style.setProperty("--tilt", `${((-70 + Math.random() * 140)).toFixed(1)}deg`);
+        streamer.style.setProperty("--dx", `${dx.toFixed(1)}px`);
+        streamer.style.setProperty("--dy", `${dy.toFixed(1)}px`);
+        streamer.style.setProperty("--spin", `${Math.round((Math.random() - 0.5) * 240)}deg`);
+        streamer.style.setProperty("--duration", `${Math.round(950 + Math.random() * 720)}ms`);
+        streamer.style.setProperty("--delay", `${Math.round(Math.random() * 140)}ms`);
+
+        streamer.addEventListener("animationend", () => {
+          streamer.remove();
+        }, { once: true });
+
+        layer.appendChild(streamer);
+      }
+    }
+
     function launchGrandCelebration() {
       if (hasShownGrandCelebration) {
         return;
       }
 
       hasShownGrandCelebration = true;
+      const layer = document.getElementById("celebrationLayer");
+      const aura = document.createElement("div");
+      aura.className = "grand-aura";
+      aura.addEventListener("animationend", () => {
+        aura.remove();
+      }, { once: true });
+      layer.appendChild(aura);
 
       const burstPoints = [
-        [0.18, 0.26],
-        [0.36, 0.22],
-        [0.5, 0.18],
-        [0.64, 0.22],
-        [0.82, 0.26]
+        [0.16, 0.28],
+        [0.34, 0.2],
+        [0.5, 0.16],
+        [0.66, 0.2],
+        [0.84, 0.28],
+        [0.26, 0.48],
+        [0.74, 0.48]
       ];
 
-      burstPoints.forEach(([xFactor, yFactor], index) => {
+      const waveCount = 9;
+      const waveInterval = 1200;
+
+      for (let wave = 0; wave < waveCount; wave += 1) {
+        burstPoints.forEach(([xFactor, yFactor], index) => {
+          const delay = (wave * waveInterval) + (index * 85);
+
+          window.setTimeout(() => {
+            const burstX = window.innerWidth * xFactor;
+            const burstY = window.innerHeight * yFactor;
+
+            createConfettiBurst({
+              x: burstX,
+              y: burstY,
+              colours: CELEBRATION_COLOURS.grand,
+              count: 44 + Math.round(Math.random() * 12),
+              duration: 1750 + Math.round(Math.random() * 450),
+              gravity: 260 + Math.round(Math.random() * 70),
+              spread: 230 + Math.round(Math.random() * 85)
+            });
+
+            createConfettiBurst({
+              x: burstX,
+              y: burstY,
+              upward: true,
+              colours: CELEBRATION_COLOURS.grand,
+              count: 34 + Math.round(Math.random() * 10),
+              duration: 1650 + Math.round(Math.random() * 450),
+              gravity: -70 + Math.round(Math.random() * 30),
+              spread: 220 + Math.round(Math.random() * 70)
+            });
+
+            launchSparkRing(burstX, burstY, CELEBRATION_COLOURS.grand[(wave + index) % CELEBRATION_COLOURS.grand.length]);
+            launchStarBurst(burstX, burstY, CELEBRATION_COLOURS.grand);
+            launchStreamers360(burstX, burstY, CELEBRATION_COLOURS.grand);
+          }, delay);
+        });
+      }
+
+      for (let edgeWave = 0; edgeWave < 5; edgeWave += 1) {
+        const edgeDelay = (edgeWave * 1800) + 320;
+
         window.setTimeout(() => {
+          const leftX = window.innerWidth * 0.08;
+          const rightX = window.innerWidth * 0.92;
+          const y = window.innerHeight * (0.24 + (edgeWave * 0.12));
+
           createConfettiBurst({
-            x: window.innerWidth * xFactor,
-            y: window.innerHeight * yFactor,
+            x: leftX,
+            y,
+            upward: true,
             colours: CELEBRATION_COLOURS.grand,
-            count: 34,
-            duration: 1700,
-            gravity: 260,
-            spread: 210
+            count: 46,
+            duration: 1950,
+            gravity: -55,
+            spread: 260
           });
-        }, index * 120);
-      });
+
+          createConfettiBurst({
+            x: rightX,
+            y,
+            upward: true,
+            colours: CELEBRATION_COLOURS.grand,
+            count: 46,
+            duration: 1950,
+            gravity: -55,
+            spread: 260
+          });
+
+          launchStreamers360(leftX, y, CELEBRATION_COLOURS.grand);
+          launchStreamers360(rightX, y, CELEBRATION_COLOURS.grand);
+        }, edgeDelay);
+      }
 
       showGrandMessage();
+    }
+
+    function previewGrandCelebration() {
+      hasShownGrandCelebration = false;
+      launchGrandCelebration();
     }
 
     function buildCalendarHighlights() {
@@ -1114,6 +1325,11 @@
     renderExams();
     renderCalendars();
     scheduleMidnightRefresh();
+
+    const previewGrandBtn = document.getElementById("previewGrandBtn");
+    if (previewGrandBtn) {
+      previewGrandBtn.addEventListener("click", previewGrandCelebration);
+    }
   </script>
 </body>
 </html>
