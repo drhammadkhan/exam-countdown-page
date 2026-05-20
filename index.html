@@ -103,6 +103,13 @@
       outline: none;
     }
 
+    .preview-btn:disabled {
+      opacity: 0.48;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
     .grid {
       display: grid;
       gap: 1rem;
@@ -730,7 +737,7 @@
       Days remaining from today until each exam. The countdown updates automatically using your device date.
     </p>
     <div class="preview-wrap">
-      <button class="preview-btn" id="previewGrandBtn" type="button">Preview final celebration</button>
+      <button class="preview-btn" id="previewGrandBtn" type="button" disabled>Final celebration</button>
     </div>
     <section class="grid" id="examGrid" aria-live="polite"></section>
     <section class="card break-card" aria-labelledby="breakTitle">
@@ -1198,6 +1205,7 @@
 
     function renderExams() {
       const grid = document.getElementById("examGrid");
+      const previewGrandBtn = document.getElementById("previewGrandBtn");
       const today = getTodayDateOnly();
       const timedExams = exams
         .map((exam) => ({ ...exam, date: parseUKDate(exam.dateString) }))
@@ -1208,6 +1216,10 @@
 
       if (!allPassed) {
         hasShownGrandCelebration = false;
+      }
+
+      if (previewGrandBtn) {
+        previewGrandBtn.disabled = !allPassed;
       }
 
       timedExams.forEach((exam) => {
